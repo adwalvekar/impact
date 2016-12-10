@@ -168,7 +168,8 @@ def feed():
 		inactive_events = []
 		if follow_list is not None:
 			for i in follow_list:
-				events_temp = Post.query.filter_by(username = i.username).order_by(date.desc())
+				events_temp = Post.query.filter_by(username = i.follows).order_by(Post.date.desc())
+				print str(i.follows)
 				for j in events_temp:
 					if j.event_type == 1 and j.active == True:
 						followed_posts.append(j)
@@ -190,14 +191,16 @@ def feed():
 		ifp = 0
 		ice = 0
 		iie = 0
-		for i in range(0,int(length)-1):
+		for i in range(0,int(length)):
+			print str(i)
+			print str(iie) + "asdljfk"
 			if i%10 <= 2 and fp>0 and ifp < fp: 
 				print str(ifp)
 				# poster = followed_posts[i%10 + 3*int(i/int(length))]
 				poster = followed_posts[ifp]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'username':poster.username,'desc':poster.desc, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name,'event_type':poster.event_type}
+				temp  = {'username':poster.username,'desc':poster.desc, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name,'event_type':poster.event_type, 'active':poster.active}
 				feed_post['feed'].append(temp)
 				ifp +=1
 			elif i%10 >= 3 and i%10 <= 5 and fe>0 and ife <fe: 
@@ -206,7 +209,7 @@ def feed():
 				poster = followed_events[ife]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'username':poster.username,'title':poster.title,'desc':poster.desc,'location':poster.location, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type}
+				temp  = {'username':poster.username,'title':poster.title,'desc':poster.desc,'location':poster.location, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
 				feed_post['feed'].append(temp)
 				ife+=1
 			elif i%10 >= 6 and i%10 <= 8 and ce>0 and ice<ce: 
@@ -215,7 +218,7 @@ def feed():
 				poster = common_events[ice]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'username':poster.username,'title':poster.title,'desc':poster.desc,'location':poster.location, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type}
+				temp  = {'username':poster.username,'title':poster.title,'desc':poster.desc,'location':poster.location, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
 				feed_post['feed'].append(temp)
 				ice+=1
 			elif i%10==9 and ie>0 and iie<ie: 
@@ -224,7 +227,7 @@ def feed():
 				poster = inactive_events[iie]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'username':poster.username,'title':poster.title,'desc':poster.desc,'location':poster.location, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type}
+				temp  = {'username':poster.username,'title':poster.title,'desc':poster.desc,'location':poster.location, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
 				feed_post['feed'].append(temp)
 				iie+=1
 		return json.dumps(feed_post)
