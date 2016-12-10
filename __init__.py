@@ -39,7 +39,7 @@ class Post(db.Model):
 	username = db.Column(db.String(50))
 	title = db.Column(db.String(100))
 	desc = db.Column(db.String(1500))
-	imglink = db.Column(db.LargeBinary)
+	imglink = db.Column(db.Text(4294967295))
 	location = db.Column(db.String(100))
 	active = db.Column(db.Boolean)
 	date = db.Column(db.DateTime)
