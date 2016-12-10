@@ -230,7 +230,7 @@ def feed():
 				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title,'desc':poster.desc,'location':poster.location, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
 				feed_post['feed'].append(temp)
 				iie+=1
-		return json.dumps(feed_post)
+		return str(json.dumps(feed_post)).replace('"', '\\"')
 	else:
 		return json.dumps({'status':False,'description': 'User not found', 'code':404})
 
