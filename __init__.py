@@ -265,7 +265,8 @@ def unfollow():
 def search():
 	fullname = request.form['fullname']
 	username = request.form['username']
-	user = user_details.query.filter_by(user_details.fullname.like("%"+fullname+"%")).all()
+	print "%"+str(fullname)+"%"
+	user = user_details.query.filter(user_details.fullname.like("%"+str(fullname)+"%")).all()
 	data = {}
 	users = []
 	if user is not None:
@@ -274,7 +275,7 @@ def search():
 			susername = i.username
 			fullname = i.fullname
 			follow = False
-			followret = Follow.query.filter_by(username = username, follows = susername).first()
+			followret = Follows.query.filter_by(username = username, follows = susername).first()
 			if followret is not None:
 				follow = True
 			temp = {}
