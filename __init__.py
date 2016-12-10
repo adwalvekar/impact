@@ -2,6 +2,7 @@ from flask import *
 from flask_sqlalchemy import SQLAlchemy
 import json
 from datetime import datetime
+from sqlalchemy.dialects.mysql import *
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -18,13 +19,27 @@ class user_login(db.Model):
 		self.username = username
 		self.password = password
 
+class user_details(db.Model):
+	__tablename__ = 'user_details'
+	udid = db.Column(db.Integer, primary_key = True)
+	username = db.Column(db.String(50), unique = True)
+	fullname = db.Column(db.String(50))
+	elevation = db.Column(db.Integer)
+	picture = db.Column(db.Text(4294967295))
+
+	def __init__(self, username, fullname, elevation, picture):
+		self.username = username
+		self.fullname = fullname
+		self.elevation = elevation
+		self.picture = picture
+
 class Post(db.Model):
 	__tablename__ = 'post'
 	pid = db.Column(db.Integer, primary_key = True)
 	username = db.Column(db.String(50))
 	title = db.Column(db.String(100))
 	desc = db.Column(db.String(1500))
-	imglink = db.Column(db.String(200))
+	imglink = db.Column(db.LargeBinary)
 	location = db.Column(db.String(100))
 	active = db.Column(db.Boolean)
 	date = db.Column(db.Date)
@@ -51,19 +66,39 @@ def login():
 	password = request.form['password']
 	check = user_login.query.filter_by(username = username, password = password).first()
 	if check is not None :
-		return json.dumps({'status':True,'code':202,'description':'Logged in'})
+		data = user_details.query.filter_by(username = username).first()
+		data_dict = {}
+		data_dict['username'] = data.username
+		data_dict['fullname'] = data.fullname
+		data_dict['elevation'] = data.elevation
+		data_dict['picture'] = data.picture
+		data_dict['status'] = True
+		data_dict['code'] = 202		
+		return json.dumps(data_dict)
 	else :
 		return json.dumps({'status':False, 'description':'Incorrect Credentials','code':401})
 @app.route('/register', methods = ['POST'])
 def register():
 	username = request.form['username']
 	password = request.form['password']
+	img = request.form['picture']
+	fullname = request.form['fullname']
+	elevation = 1
 	check = user_login.query.filter_by(username = username).first()
 	if check is None:
 		user = user_login(username, password)
 		db.session.add(user)
+		ud = user_details(username,fullname,elevation,img)
+		db.session.add(ud)
 		db.session.commit()
-		return json.dumps({'status':True,'code':201,'description':"Created"})
+		data_dict= {}
+		data_dict['username'] = username
+		data_dict['fullname'] = fullname
+		data_dict['elevation'] = elevation
+		data_dict['picture'] = img
+		data_dict['status'] = True
+		data_dict['code'] = 201
+		return json.dumps(data_dict)
 	else:
 		return json.dumps({'status':False, 'description':'User already Exists','code':409})
 
