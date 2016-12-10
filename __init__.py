@@ -72,7 +72,6 @@ class Follows(db.Model):
 
 @app.route('/login', methods = ['POST'])
 def login():
-	print str(request.form)
 	username = request.form['username']
 	password = request.form['password']
 	check = user_login.query.filter_by(username = username, password = password).first()
@@ -90,7 +89,6 @@ def login():
 		return json.dumps({'status':False, 'description':'Incorrect Credentials','code':401})
 @app.route('/register', methods = ['POST'])
 def register():
-	print str(request.form)
 	username = request.form['username']
 	password = request.form['password']
 	img = request.form['picture']
@@ -169,7 +167,6 @@ def feed():
 		if follow_list is not None:
 			for i in follow_list:
 				events_temp = Post.query.filter_by(username = i.follows).order_by(Post.date.desc())
-				print str(i.follows)
 				for j in events_temp:
 					if j.event_type == 1 and j.active == True:
 						followed_posts.append(j)
@@ -186,17 +183,12 @@ def feed():
 		feed_post['status'] = True
 		feed_post['code'] = 200
 		feed_post['feed'] = []
-		print "fe:"+str(fe)+"ie:"+str(ie)+"fp:"+str(fp)+"ce:"+str(ce)
 		ife = 0
 		ifp = 0
 		ice = 0
 		iie = 0
 		for i in range(0,int(length)):
-			print str(i)
-			print str(iie) + "asdljfk"
 			if i%10 <= 2 and fp>0 and ifp < fp: 
-				print str(ifp)
-				# poster = followed_posts[i%10 + 3*int(i/int(length))]
 				poster = followed_posts[ifp]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
@@ -204,8 +196,6 @@ def feed():
 				feed_post['feed'].append(temp)
 				ifp +=1
 			elif i%10 >= 3 and i%10 <= 5 and fe>0 and ife <fe: 
-				print str(ife)
-				# poster = followed_events[i%10 + 3*int(i/int(length))]
 				poster = followed_events[ife]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
@@ -213,8 +203,6 @@ def feed():
 				feed_post['feed'].append(temp)
 				ife+=1
 			elif i%10 >= 6 and i%10 <= 8 and ce>0 and ice<ce: 
-				print str(ice)
-				# poster = common_events[i%10 + 3*int(i/int(length))]
 				poster = common_events[ice]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
@@ -222,20 +210,17 @@ def feed():
 				feed_post['feed'].append(temp)
 				ice+=1
 			elif i%10==9 and ie>0 and iie<ie: 
-				# poster = inactive_events[int(i/int(length))]
-				print str(iie)
 				poster = inactive_events[iie]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
 				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
 				feed_post['feed'].append(temp)
 				iie+=1
+		print str(json.dumps(feed_post))
 		return json.dumps(feed_post)
 	else:
 		return json.dumps({'status':False,'description': 'User not found', 'code':404})
 
-
-	
 @app.route('/follow', methods = ['POST'])
 def follow():
 	username = request.form['username']
@@ -265,7 +250,6 @@ def unfollow():
 def search():
 	fullname = request.form['fullname']
 	username = request.form['username']
-	print "%"+str(fullname)+"%"
 	user = user_details.query.filter(user_details.fullname.like("%"+str(fullname)+"%")).all()
 	data = {}
 	users = []
