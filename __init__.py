@@ -42,7 +42,7 @@ class Post(db.Model):
 	imglink = db.Column(db.LargeBinary)
 	location = db.Column(db.String(100))
 	active = db.Column(db.Boolean)
-	date = db.Column(db.Date)
+	date = db.Column(db.DateTime)
 	x = db.Column(db.Float)
 	y = db.Column(db.Float)
 	event_type = db.Column(db.Integer)
@@ -105,12 +105,12 @@ def register():
 @app.route('/post', methods = ['POST'])
 def post():
 	username = request.form['username']
-	title = request.form['title']
+	title = None
 	desc = request.form['desc']
-	imglink = request.form['imglink']
-	location = request.form['location']
+	imglink = None
+	location = None
 	active = True
-	date = datetime.strptime(request.form['date'] , '%d-%m-%Y')
+	date = datetime.strptime(request.form['date'] , '%b %d %Y %I:%M%p')
 	event_type = request.form['event_type']
 	p = Post(username, title, desc, imglink, location, event_type, date, active = active)
 	db.session.add(p)
