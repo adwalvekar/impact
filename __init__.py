@@ -193,31 +193,34 @@ def feed():
 				poster = followed_posts[ifp]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'pid':poster.pid,'username':poster.username,'desc':poster.desc, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name,'event_type':poster.event_type, 'active':poster.active}
+				image = name_get.picture
+				temp  = {'pid':poster.pid,'username':poster.username,'desc':poster.desc, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name,'event_type':poster.event_type, 'active':poster.active, 'userimage':image}
 				feed_post['feed'].append(temp)
 				ifp +=1
 			elif i%10 >= 3 and i%10 <= 5 and fe>0 and ife <fe: 
 				poster = followed_events[ife]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
+				image = name_get.picture
+				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active,'userimage':image, 'postimage':poster.imglink}
 				feed_post['feed'].append(temp)
 				ife+=1
 			elif i%10 >= 6 and i%10 <= 8 and ce>0 and ice<ce: 
 				poster = common_events[ice]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
+				image = name_get.picture
+				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active, 'userimage':image, 'postimage':poster.imglink}
 				feed_post['feed'].append(temp)
 				ice+=1
 			elif i%10==9 and ie>0 and iie<ie: 
 				poster = inactive_events[iie]
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
-				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active}
+				image = name_get.picture
+				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active, 'userimage':image, 'postimage':poster.imglink}
 				feed_post['feed'].append(temp)
 				iie+=1
-		print str(json.dumps(feed_post))
 		return json.dumps(feed_post)
 	else:
 		return json.dumps({'status':False,'description': 'User not found', 'code':404})
