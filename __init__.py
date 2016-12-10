@@ -119,6 +119,30 @@ def post():
 	db.session.commit()
 	return json.dumps({'status':True,'code':201,'description':"Created"})
 
+@app.route('/event', methods = ['POST'])
+def event():
+	username = request.form['username']
+	title = request.form['title']
+	desc = request.form['desc']
+	imglink = request.form['picture']
+	location = request.form['location']
+	active = True
+	date = datetime.fromtimestamp(long(request.form['date'])/1000).strftime('%Y-%m-%d %H:%M:%S')
+	event_type = request.form['event_type']
+	p = Post(username, title, desc, imglink, location, event_type, date, active = active)
+	db.session.add(p)
+	db.session.commit()
+	return json.dumps({'status':True,'code':201,'description':"Created"})
+
+@app.route('/getImagesGivenPost', methods = ['POST'])
+def getImages():
+	username = request.form['username']
+	pid = request.form['pid']
+	user = user_details.query.filter_by(username = username).first()
+	userimage = user.picture
+	pos = Post.query.filter_by(pid = pid).first()
+	postimage = pos.imglink
+	return json.dumps({'status': True, 'userimage': userimage, 'postimage' : postimage, "code" : 200})
 db.create_all()
 if __name__=='__main__':
 	app.run(debug=True)
