@@ -62,6 +62,7 @@ class Post(db.Model):
 		
 @app.route('/login', methods = ['POST'])
 def login():
+	print str(request.form)
 	username = request.form['username']
 	password = request.form['password']
 	check = user_login.query.filter_by(username = username, password = password).first()
@@ -79,6 +80,7 @@ def login():
 		return json.dumps({'status':False, 'description':'Incorrect Credentials','code':401})
 @app.route('/register', methods = ['POST'])
 def register():
+	print str(request.form)
 	username = request.form['username']
 	password = request.form['password']
 	img = request.form['picture']
@@ -104,13 +106,14 @@ def register():
 
 @app.route('/post', methods = ['POST'])
 def post():
+	print str(request.form)
 	username = request.form['username']
 	title = None
 	desc = request.form['desc']
 	imglink = None
 	location = None
 	active = True
-	date = datetime.strptime(request.form['date'] , '%b %d %Y %I:%M%p')
+	date = datetime.fromtimestamp(int(request.form['date'])).strftime('%Y-%m-%d %H:%M:%S')
 	event_type = request.form['event_type']
 	p = Post(username, title, desc, imglink, location, event_type, date, active = active)
 	db.session.add(p)
