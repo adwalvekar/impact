@@ -59,7 +59,17 @@ class Post(db.Model):
 		self.y = y
 		self.event_type = event_type
 		
-		
+class Follows(db.Model):
+	__tablename__ = "Follows"
+	fid = db.Column(db.Integer, primary_key = True)
+	username = db.Column(db.String(50))
+	follows = db.Column(db.String(50))
+
+	def __init__(self, username, follows):
+		self.follows = follows
+		self.username = username
+
+
 @app.route('/login', methods = ['POST'])
 def login():
 	print str(request.form)
@@ -143,6 +153,36 @@ def getImages():
 	pos = Post.query.filter_by(pid = pid).first()
 	postimage = pos.imglink
 	return json.dumps({'status': True, 'userimage': userimage, 'postimage' : postimage, "code" : 200})
+
+@app.route('/feed', methods = ['POST'])
+def feed():
+	username = request.form['username']
+
+@app.route('/follow', methods = ['POST'])
+def follow():
+	username = request.form['username']
+	follows = request.form['follows']
+	check = Follows.query.filter_by(username = username, follows = follows).first()
+	if check is None:	
+		f = Follows(username,follows)
+		db.session.add(f)
+		db.session.commit()
+		return json.dumps({'status':True, 'code': 202})
+	else :
+		return json.dumps({'status':False, 'code': 409, 'description':"Already Following"})
+
+@app.route('/unfollow',methods = ['POST'])
+def unfllow():
+	username = request.form['username']
+	follows = request.form['follows']
+	check = Follows.query.filter_by(username = username, follows = follows).first()
+	if check is not None:	
+		Follows.query.filter_by(username = username, follows = follows).delete()
+		db.session.commit()
+		return json.dumps({'status':True, 'code': 202})
+	else :
+		return json.dumps({'status':False, 'code': 409, 'description':"Not Following"})
+
 db.create_all()
 if __name__=='__main__':
 	app.run(debug=True)
