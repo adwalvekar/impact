@@ -150,6 +150,7 @@ def getImages():
 	userret = user_details.query.filter_by(username = user).first()
 	userimage = userret.picture
 	postimage = pos.imglink
+	print str(json.dumps({'status': True, 'userimage': userimage, 'postimage' : postimage, "code" : 200}))
 	return json.dumps({'status': True, 'userimage': userimage, 'postimage' : postimage, "code" : 200})
 
 @app.route('/feed', methods = ['POST'])
