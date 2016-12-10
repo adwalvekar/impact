@@ -146,11 +146,11 @@ def event():
 
 @app.route('/getImagesGivenPost', methods = ['POST'])
 def getImages():
-	username = request.form['username']
 	pid = request.form['pid']
-	user = user_details.query.filter_by(username = username).first()
-	userimage = user.picture
 	pos = Post.query.filter_by(pid = pid).first()
+	user = pos.username
+	userret = user_details.query.filter_by(username = user).first()
+	userimage = userret.picture
 	postimage = pos.imglink
 	return json.dumps({'status': True, 'userimage': userimage, 'postimage' : postimage, "code" : 200})
 
@@ -250,7 +250,7 @@ def follow():
 		return json.dumps({'status':False, 'code': 409, 'description':"Already Following"})
 
 @app.route('/unfollow',methods = ['POST'])
-def unfllow():
+def unfollow():
 	username = request.form['username']
 	follows = request.form['follows']
 	check = Follows.query.filter_by(username = username, follows = follows).first()
@@ -260,6 +260,38 @@ def unfllow():
 		return json.dumps({'status':True, 'code': 202})
 	else :
 		return json.dumps({'status':False, 'code': 409, 'description':"Not Following"})
+
+@app.route('/search', methods=['POST'])
+def search():
+	fullname = request.form['fullname']
+	username = request.form['username']
+	user = user_details.query.filter_by(user_details.fullname.like("%"+fullname+"%")).all()
+	data = {}
+	users = []
+	if user is not None:
+		for i in user:
+			image = i.picture
+			susername = i.username
+			fullname = i.fullname
+			follow = False
+			followret = Follow.query.filter_by(username = username, follows = susername).first()
+			if followret is not None:
+				follow = True
+			temp = {}
+			temp['username'] = susername
+			temp['image'] = image
+			temp['fullname'] = fullname
+			temp['follows'] =follow
+			users.append(temp)
+		data['status'] = True
+		data['code'] = 200
+		data['users'] = users
+		return json.dumps(data)
+	else:
+		data['status'] = False
+		data['code'] = 404
+		data['description'] = 'User not Found'
+		return json.json.dumps(data)
 
 db.create_all()
 if __name__=='__main__':
