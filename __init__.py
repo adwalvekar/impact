@@ -106,14 +106,13 @@ def register():
 
 @app.route('/post', methods = ['POST'])
 def post():
-	print str(request.form)
 	username = request.form['username']
 	title = None
 	desc = request.form['desc']
 	imglink = None
 	location = None
 	active = True
-	date = datetime.fromtimestamp(int(request.form['date'])).strftime('%Y-%m-%d %H:%M:%S')
+	date = datetime.fromtimestamp(long(request.form['date'])/1000).strftime('%Y-%m-%d %H:%M:%S')
 	event_type = request.form['event_type']
 	p = Post(username, title, desc, imglink, location, event_type, date, active = active)
 	db.session.add(p)
