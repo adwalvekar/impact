@@ -167,7 +167,7 @@ def feed():
 		inactive_events = []
 		if follow_list is not None:
 			for i in follow_list:
-				events_temp = Post.query.filter_by(username = i.follows).order_by(Post.date.desc())
+				events_temp = Post.query.filter_by(username = i.follows).order_by(Post.date)
 				for j in events_temp:
 					if j.event_type == 1 and j.active == True:
 						followed_posts.append(j)
@@ -178,7 +178,7 @@ def feed():
 					elif j.event_type == 2 and j.active == False:
 						inactive_events.append(j)
 						ie+=1
-		common_events = Post.query.filter_by(event_type = 3).order_by(Post.date.desc())
+		common_events = Post.query.filter_by(event_type = 3).order_by(Post.date)
 		ce = Post.query.filter_by(event_type = 3).count()
 		feed_post = {}
 		feed_post['status'] = True
@@ -281,6 +281,41 @@ def search():
 		data['code'] = 404
 		data['description'] = 'User not Found'
 		return json.json.dumps(data)
+
+@app.route('/followlist',methods = ['POST'])
+def followlist():
+	username = request.form['username']
+	flist = Follows.query.filter_by(username = username)
+	data = {}
+	data['list'] = []
+	data['count'] = Follows.query.filter_by(username = username).count()
+	for i in flist:
+		dataret = user_details.query.filter_by(username = i.follows).first()
+		temp = {}
+		temp['picture'] = dataret.picture
+		temp['fullname'] = dataret.fullname
+		temp['username'] = dataret.username
+		data['list'].append(temp)
+	data['status'] = True
+	data['code'] = 200
+	return json.dumps(data)
+@app.route('/followerlist',methods = ['POST'])
+def followerlist():
+	username = request.form['username']
+	flist = Follows.query.filter_by(follows = username)
+	data = {}
+	data['list'] = []
+	data['count'] = Follows.query.filter_by(follows = username).count()
+	for i in flist:
+		dataret = user_details.query.filter_by(username = i.username).first()
+		temp = {}
+		temp['picture'] = dataret.picture
+		temp['fullname'] = dataret.fullname
+		temp['username'] = dataret.username
+		data['list'].append(temp)
+	data['status'] = True
+	data['code'] = 200
+	return json.dumps(data)
 
 db.create_all()
 if __name__=='__main__':
