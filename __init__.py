@@ -19,6 +19,16 @@ class user_login(db.Model):
 		self.username = username
 		self.password = password
 
+class user_token(db.Model):
+	__tablename__ = 'user_token'
+	tid = db.Column(db.Integer, primary_key = True)
+	username = db.Column(db.String(50), unique = True)
+	token = db.Column(db.String(50))
+
+	def __init__(self, username, token):
+		self.username = username
+		self.token = token
+
 class user_details(db.Model):
 	__tablename__ = 'user_details'
 	udid = db.Column(db.Integer, primary_key = True)
@@ -122,6 +132,25 @@ def register():
 		return json.dumps(data_dict)
 	else:
 		return json.dumps({'status':False, 'description':'User already Exists','code':409})
+
+@app.route('/token', methods = ['POST'])
+def token():
+	username = request.form['username']
+	token = request.form['token']
+	t = user_token(username,token)
+	db.session.add(t)
+	db.session.commit()
+	return json.dumps({'status':True, 'code':200})
+
+@app.route('/tacotest', methods = ['POST','GET'])
+def tacotest():
+	if request.method == 'GET':
+		message = "Test"
+		title = "SUZY SUX"
+	else:
+		message = request.form['message']
+		title = request.form['title']
+	return "OK"
 
 @app.route('/post', methods = ['POST'])
 def post():
