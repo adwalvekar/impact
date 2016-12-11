@@ -95,9 +95,17 @@ class Follows(db.Model):
 def login():
 	username = request.form['username']
 	password = request.form['password']
+	token = request.form['token']
 	check = user_login.query.filter_by(username = username, password = password).first()
 	if check is not None :
 		data = user_details.query.filter_by(username = username).first()
+		t = user_token.query.filter_by(username = username).first()
+		if t is None:
+			to = user_token(username,token)
+			db.session.add(to)
+		else :
+			t.token = token
+		db.session.commit()
 		data_dict = {}
 		data_dict['username'] = data.username
 		data_dict['fullname'] = data.fullname
@@ -114,6 +122,7 @@ def register():
 	password = request.form['password']
 	img = request.form['picture']
 	fullname = request.form['fullname']
+	token = request.form['token']
 	elevation = 1
 	check = user_login.query.filter_by(username = username).first()
 	if check is None:
@@ -121,6 +130,8 @@ def register():
 		db.session.add(user)
 		ud = user_details(username,fullname,elevation,img)
 		db.session.add(ud)
+		t = user_token(username,token)
+		db.session.add(t)
 		db.session.commit()
 		data_dict= {}
 		data_dict['username'] = username
@@ -132,15 +143,6 @@ def register():
 		return json.dumps(data_dict)
 	else:
 		return json.dumps({'status':False, 'description':'User already Exists','code':409})
-
-@app.route('/token', methods = ['POST'])
-def token():
-	username = request.form['username']
-	token = request.form['token']
-	t = user_token(username,token)
-	db.session.add(t)
-	db.session.commit()
-	return json.dumps({'status':True, 'code':200})
 
 @app.route('/tacotest', methods = ['POST','GET'])
 def tacotest():
