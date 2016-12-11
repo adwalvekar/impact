@@ -33,6 +33,17 @@ class user_details(db.Model):
 		self.elevation = elevation
 		self.picture = picture
 
+class Attending(db.Model):
+	__tablename__ = 'Attending'
+	aid = db.Column(db.Integer, primary_key = True)
+	username = db.Column(db.String(50))
+	pid = db.Column(db.Integer)
+
+	def __init__(self, username, pid):
+		self.username = username
+		self.pid = pid
+		
+
 class Post(db.Model):
 	__tablename__ = 'post'
 	pid = db.Column(db.Integer, primary_key = True)
@@ -158,6 +169,10 @@ def feed():
 	username = request.form['username']
 	length = request.form['length']
 	if username is not None:
+		attendlist = Attending.query.filter_by(username = username)
+		attend = []
+		for i in attendlist:
+			attend.append(i.pid)
 		follow_list = Follows.query.filter_by(username = username)
 		fp =0
 		followed_posts=[]
@@ -194,7 +209,11 @@ def feed():
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
 				image = name_get.picture
-				temp  = {'pid':poster.pid,'username':poster.username,'desc':poster.desc, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name,'event_type':poster.event_type, 'active':poster.active, 'userimage':image}
+				if poster.pid in attend:
+					attending = True
+				else :
+					attending = False
+				temp  = {'pid':poster.pid,'username':poster.username,'desc':poster.desc, 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name,'event_type':poster.event_type, 'active':poster.active, 'userimage':image, 'attending' : attending}
 				feed_post['feed'].append(temp)
 				ifp +=1
 			elif i%10 >= 3 and i%10 <= 5 and fe>0 and ife <fe: 
@@ -202,7 +221,11 @@ def feed():
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
 				image = name_get.picture
-				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active,'userimage':image, 'postimage':poster.imglink}
+				if poster.pid in attend:
+					attending = True
+				else :
+					attending = False
+				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active,'userimage':image, 'postimage':poster.imglink, 'attending':attending}
 				feed_post['feed'].append(temp)
 				ife+=1
 			elif i%10 >= 6 and i%10 <= 8 and ce>0 and ice<ce: 
@@ -210,7 +233,11 @@ def feed():
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
 				image = name_get.picture
-				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active, 'userimage':image, 'postimage':poster.imglink}
+				if poster.pid in attend:
+					attending = True
+				else :
+					attending = False
+				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active, 'userimage':image, 'postimage':poster.imglink, 'attending' : attending}
 				feed_post['feed'].append(temp)
 				ice+=1
 			elif i%10==9 and ie>0 and iie<ie: 
@@ -218,7 +245,11 @@ def feed():
 				name_get = user_details.query.filter_by(username = poster.username).first()
 				name = name_get.fullname
 				image = name_get.picture
-				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active, 'userimage':image, 'postimage':poster.imglink}
+				if poster.pid in attend:
+					attending = True
+				else :
+					attending = False
+				temp  = {'pid':poster.pid,'username':poster.username,'title':poster.title.replace('"', '\\"'),'desc':poster.desc.replace('"', '\\"'),'location':poster.location.replace('"', '\\"'), 'date':poster.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':poster.event_type, 'active':poster.active, 'userimage':image, 'postimage':poster.imglink, 'attending' : attending}
 				feed_post['feed'].append(temp)
 				iie+=1
 		return json.dumps(feed_post)
@@ -316,6 +347,69 @@ def followerlist():
 	data['status'] = True
 	data['code'] = 200
 	return json.dumps(data)
+
+app.route('/attend', methods = ['POST'])
+def attend():
+	username = request.form['username']
+	pid = request.form['pid']
+	check = Attending.query.filter_by(username = username, pid = pid).first()
+	if check is None:	
+		a = Attending(username,pid)
+		db.session.add(a)
+		db.session.commit()
+		return json.dumps({'status':True, 'code': 202})
+	else :
+		return json.dumps({'status':False, 'code': 409, 'description':"Already Attending"})
+
+@app.route('/unattend',methods = ['POST'])
+def unattend():
+	username = request.form['username']
+	pid = request.form['pid']
+	check = Attending.query.filter_by(username = username, pid = pid).first()
+	if check is not None:	
+		Attending.query.filter_by(username = username, pid = pid).delete()
+		db.session.commit()
+		return json.dumps({'status':True, 'code': 202})
+	else :
+		return json.dumps({'status':False, 'code': 409, 'description':"Not Attending"})
+
+@app.route('/attendlistforevent',methods = ['POST'])
+def attendlistforevent():
+	pid = request.form['pid']
+	alist = Attending.query.filter_by(pid = pid)
+	data = {}
+	data['list'] = []
+	data['count'] = Attending.query.filter_by(pid = pid).count()
+	for i in alist:
+		dataret = user_details.query.filter_by(username = i.username).first()
+		temp = {}
+		temp['picture'] = dataret.picture
+		temp['fullname'] = dataret.fullname
+		temp['username'] = dataret.username
+		data['list'].append(temp)
+	data['status'] = True
+	data['code'] = 200
+	return json.dumps(data)
+
+@app.route('/attendlistforuser',methods = ['POST'])
+def attendlistforuser():
+	username = request.form['username']
+	alist = Attending.query.filter_by(username = username)
+	data = {}
+	data['list'] = []
+	data['count'] = Attending.query.filter_by(username = username).count()
+	for i in alist:
+		dataret = Post.query.filter_by(pid = i.pid).first()
+		temp = {}
+		name_get = user_details.query.filter_by(username = dataret.username).first()
+		name = name_get.fullname
+		image = name_get.picture
+		temp  = {'pid':dataret.pid,'username':dataret.username,'title':dataret.title.replace('"', '\\"'),'desc':dataret.desc.replace('"', '\\"'),'location':dataret.location.replace('"', '\\"'), 'date':dataret.date.strftime("%Y-%m-%d %H:%M:%S"), 'name':name, 'event_type':dataret.event_type, 'active':dataret.active, 'userimage':image, 'postimage':dataret.imglink}
+		data['list'].append(temp)
+	data['status'] = True
+	data['code'] = 200
+	return json.dumps(data)
+
 
 db.create_all()
 if __name__=='__main__':
