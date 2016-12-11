@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 from datetime import datetime
 from sqlalchemy.dialects.mysql import *
+import urllib2
+from pyfcm import FCMNotification
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -23,7 +25,7 @@ class user_token(db.Model):
 	__tablename__ = 'user_token'
 	tid = db.Column(db.Integer, primary_key = True)
 	username = db.Column(db.String(50), unique = True)
-	token = db.Column(db.String(50))
+	token = db.Column(db.String(500))
 
 	def __init__(self, username, token):
 		self.username = username
@@ -167,6 +169,7 @@ def post():
 	p = Post(username, title, desc, imglink, location, event_type, date, active = active)
 	db.session.add(p)
 	db.session.commit()
+	sendNotification(username,p)
 	return json.dumps({'status':True,'code':201,'description':"Created"})
 
 @app.route('/event', methods = ['POST'])
@@ -441,7 +444,19 @@ def attendlistforuser():
 	data['code'] = 200
 	return json.dumps(data)
 
-
+def sendNotification(username,post):
+	flist = Follows.query.filter_by(follows = username)
+	nameret = user_details.query.filter_by(username = username).first()
+	name = nameret.fullname
+	registration_ids= []
+	for i in flist:
+		dataret = user_token.query.filter_by(username = i.username).first()
+		registration_ids.append(dataret.token)
+	push_service = FCMNotification(api_key="AAAAFXEDMyw:APA91bHARuwO7X7Y5I_lLwkbEiQ3bCzt3TVS6awj6iqFolpd_YXMKKhevsoMsdx-cCWPkaXMR7iFuJB0X3TrVXqUcOgqSIfTO898PgWEsWZQrdZbDt8RILtgicYOS836jypqnMdAbsG4J170Fvj0tOdtB_USzhqj-g")
+	message_title = "New Post from "+name
+	message_body = post.title
+	result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_title=message_title, message_body=message_body)
+	
 db.create_all()
 if __name__=='__main__':
 	app.run(debug=True)
