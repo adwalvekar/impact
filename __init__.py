@@ -393,7 +393,7 @@ def attendlistforevent():
 
 @app.route('/attendlistforuser',methods = ['POST'])
 def attendlistforuser():
-	username = request.form['username']
+	username = request.form['username'] 
 	alist = Attending.query.filter_by(username = username)
 	data = {}
 	data['list'] = []
