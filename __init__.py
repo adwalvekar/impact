@@ -185,6 +185,7 @@ def event():
 	p = Post(username, title, desc, imglink, location, event_type, date, active = active)
 	db.session.add(p)
 	db.session.commit()
+	sendNotification(username,p)
 	return json.dumps({'status':True,'code':201,'description':"Created"})
 
 @app.route('/getImagesGivenPost', methods = ['POST'])
@@ -216,7 +217,7 @@ def feed():
 		inactive_events = []
 		if follow_list is not None:
 			for i in follow_list:
-				events_temp = Post.query.filter_by(username = i.follows).order_by(Post.date)
+				events_temp = Post.query.filter_by(username = i.follows).order_by(Post.date.desc())
 				for j in events_temp:
 					if j.event_type == 1 and j.active == True:
 						followed_posts.append(j)
@@ -227,7 +228,7 @@ def feed():
 					elif j.event_type == 2 and j.active == False:
 						inactive_events.append(j)
 						ie+=1
-		common_events = Post.query.filter_by(event_type = 3).order_by(Post.date)
+		common_events = Post.query.filter_by(event_type = 3).order_by(Post.date.desc())
 		ce = Post.query.filter_by(event_type = 3).count()
 		feed_post = {}
 		feed_post['status'] = True
@@ -382,7 +383,7 @@ def followerlist():
 	data['code'] = 200
 	return json.dumps(data)
 
-app.route('/attend', methods = ['POST'])
+@app.route('/attend', methods = ['POST'])
 def attend():
 	username = request.form['username']
 	pid = request.form['pid']
@@ -449,13 +450,20 @@ def sendNotification(username,post):
 	nameret = user_details.query.filter_by(username = username).first()
 	name = nameret.fullname
 	registration_ids= []
+	usernames = []
 	for i in flist:
 		dataret = user_token.query.filter_by(username = i.username).first()
 		registration_ids.append(dataret.token)
+		usernames.append(dataret.username)
 	push_service = FCMNotification(api_key="AAAAFXEDMyw:APA91bHARuwO7X7Y5I_lLwkbEiQ3bCzt3TVS6awj6iqFolpd_YXMKKhevsoMsdx-cCWPkaXMR7iFuJB0X3TrVXqUcOgqSIfTO898PgWEsWZQrdZbDt8RILtgicYOS836jypqnMdAbsG4J170Fvj0tOdtB_USzhqj-g")
 	message_title = "New Post from "+name
-	message_body = post.title
+	message_body = post.desc
 	result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_title=message_title, message_body=message_body)
+	print message_title
+	print message_body
+	print str(registration_ids)
+	print str(usernames)
+	print str(result)	
 	
 db.create_all()
 if __name__=='__main__':
